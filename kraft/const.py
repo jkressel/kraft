@@ -176,6 +176,7 @@ UK_CORE_PLATS = [
     'kvm',
     'xen',
     'linuxu',
+    'morello',
 ]
 
 CONFIG_UK_ARCH = re.compile(
