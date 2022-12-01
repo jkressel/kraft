@@ -698,6 +698,8 @@ class Application(Component):
             elif (type(self.compartments[0].mechanism.driver) == IntelPKUDriver or
                   type(self.compartments[0].mechanism.driver) == FcallsDriver):
                 tmpl = "linkerscript_initarray_vanilla.in",
+            elif (type(self.compartments[0].mechanism.driver) == MorelloDriver):
+                tmpl = "linkerscript_initarray_vanilla.in",
             else:
                 logger.error("Transformations not supported for this mechanism (" +
                         str(type(self.compartments[0].mechanism.driver))+ ")")
