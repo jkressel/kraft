@@ -37,12 +37,14 @@ from enum import Enum
 from .fcalls import FcallsDriver
 from .intelpku import IntelPKUDriver
 from .vmept import VMEPTDriver
+from .morello import MorelloDriver
 
 
 class CompartmentDriverTypes(Enum):
     DRIVER_INTELPKU = ("intel-pku", IntelPKUDriver)
     DRIVER_VMEPT = ("vmept", VMEPTDriver)
     DRIVER_FCALLS = ("fcalls", FcallsDriver)
+    DRIVER_MORELLO = ("morello", MorelloDriver)
 
     @property
     def name(self):
