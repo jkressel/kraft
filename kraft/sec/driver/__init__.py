@@ -35,5 +35,6 @@ from __future__ import unicode_literals
 from .intelpku import IntelPKUDriver
 from .fcalls import FcallsDriver
 from .vmept import VMEPTDriver
+from .morello import MorelloDriver
 from .driver import Driver
 from .types import CompartmentDriverTypes
