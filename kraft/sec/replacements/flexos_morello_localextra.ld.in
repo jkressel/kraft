@@ -1,0 +1,15 @@
+SECTIONS
+{
+	.data_comp{{ comp_nr }} : {
+		* (.data .data.* .rodata .rodata.*)
+	}
+	.bss_comp{{ comp_nr }} : {
+		* (.bss .bss.* COMMON)
+	}
+	.initarray_comp{{ comp_nr }} : {
+		* (.initarray .initarray.*)
+	}
+}
+INSERT AFTER .text;
+
+/* discard rules would come here */

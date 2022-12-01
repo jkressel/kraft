@@ -615,6 +615,9 @@ class Application(Component):
         DSS_enabled = False
         SHSTACK_enabled = False
         FCALLS_enabled = False
+        morello_enabled = False
+        # x86 kvm by default because that's what has been used so far
+        linker_script_path = "plat/kvm/x86/link64.lds.S"
         with open(os.path.join(self.localdir, ".config")) as conf:
             conf_content = conf.read()
             if 'CONFIG_LIBFLEXOS_NONE=y' in conf_content:
@@ -624,6 +627,8 @@ class Application(Component):
             elif 'CONFIG_LIBFLEXOS_MORELLO=y' in conf_content:
                 SHSTACK_enabled = True
                 FCALLS_enabled = True
+                morello_enabled = True
+                linker_script_path = "plat/morello/link.lds.S"
             elif 'CONFIG_LIBFLEXOS_VMEPT=y' in conf_content:
                 logger.info("Building for VM/EPT")
                 SHSTACK_enabled = True
@@ -683,14 +688,20 @@ class Application(Component):
                         marker, fulldiff=fulldiff)
 
             # FIXME hardcoded paths here
-            simple_replace(
-                "linkerscript_data.in",
-                "plat/kvm/x86/link64.lds.S",
-                "/* __FLEXOS MARKER__: insert compartment data sections here. */")
-            simple_replace(
-                "linkerscript_bss.in",
-                "plat/kvm/x86/link64.lds.S",
-                "/* __FLEXOS MARKER__: insert compartment bss sections here. */")
+            if morello_enabled is False:
+                simple_replace(
+                    "linkerscript_data.in",
+                    linker_script_path,
+                    "/* __FLEXOS MARKER__: insert compartment data sections here. */")
+                simple_replace(
+                    "linkerscript_bss.in",
+                    linker_script_path,
+                    "/* __FLEXOS MARKER__: insert compartment bss sections here. */")
+            else:
+                simple_replace(
+                    "flexos_morello.in",
+                    linker_script_path,
+                    "/* __FLEXOS MARKER__: insert compartment data sections here. */")
 
             tmpl = ""
             if (type(self.compartments[0].mechanism.driver) == VMEPTDriver):
@@ -704,9 +715,10 @@ class Application(Component):
                 logger.error("Transformations not supported for this mechanism (" +
                         str(type(self.compartments[0].mechanism.driver))+ ")")
                 exit(1)
-            simple_replace(
-                tmpl, "plat/kvm/x86/link64.lds.S",
-                "/* __FLEXOS MARKER__: insert compartment init array sections here. */")
+            if morello_enabled is False:
+                simple_replace(
+                    tmpl, linker_script_path,
+                    "/* __FLEXOS MARKER__: insert compartment init array sections here. */")
 
             simple_replace(
                 "ukboot_decl_sections.in",
