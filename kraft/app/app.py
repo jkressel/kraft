@@ -78,6 +78,7 @@ from kraft.sec import get_sec_rule
 from kraft.sec.driver.intelpku import IntelPKUDriver
 from kraft.sec.driver.vmept import VMEPTDriver
 from kraft.sec.driver.fcalls import FcallsDriver
+from kraft.sec.driver.morello import MorelloDriver
 from kraft.sec import textual_replacement
 from kraft.sec import coccinelle_rewrite
 from kraft.sec import add_local_linkerscript
@@ -618,6 +619,9 @@ class Application(Component):
             conf_content = conf.read()
             if 'CONFIG_LIBFLEXOS_NONE=y' in conf_content:
                 # building with the fcalls backend, no need for shared data
+                SHSTACK_enabled = True
+                FCALLS_enabled = True
+            elif 'CONFIG_LIBFLEXOS_MORELLO=y' in conf_content:
                 SHSTACK_enabled = True
                 FCALLS_enabled = True
             elif 'CONFIG_LIBFLEXOS_VMEPT=y' in conf_content:
