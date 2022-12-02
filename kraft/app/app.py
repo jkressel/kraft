@@ -678,6 +678,8 @@ class Application(Component):
         # linker script, that we initialize them in ukboot, etc.
         if (len(self.compartments) > 1):
 
+            logger.error("Number of compartments: " + str(len(self.compartments)))
+
             def simple_replace(template_path, path, marker, shstack_enabled=True):
                 # shstack_enabled = should we replace when shared stacks are enabled?
                 if SHSTACK_enabled and not shstack_enabled:
