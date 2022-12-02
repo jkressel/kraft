@@ -689,6 +689,15 @@ class Application(Component):
                 textual_replacement(comps, template_path, filep,
                         marker, fulldiff=fulldiff)
 
+            def simple_replace_morello(template_path, path, marker, shstack_enabled=True):
+                # shstack_enabled = should we replace when shared stacks are enabled?
+                if SHSTACK_enabled and not shstack_enabled:
+                    return
+                filep = os.path.join(self._config.unikraft.localdir, path)
+                comps = list(set(self.compartments))
+                textual_replacement(comps, template_path, filep,
+                        marker, fulldiff=fulldiff)
+
             # FIXME hardcoded paths here
             if morello_enabled is False:
                 simple_replace(
@@ -700,7 +709,7 @@ class Application(Component):
                     linker_script_path,
                     "/* __FLEXOS MARKER__: insert compartment bss sections here. */")
             else:
-                simple_replace(
+                simple_replace_morello(
                     "flexos_morello.in",
                     linker_script_path,
                     "/* __FLEXOS MARKER__: insert compartment data sections here. */")
