@@ -714,6 +714,11 @@ class Application(Component):
                     linker_script_path,
                     "/* __FLEXOS MARKER__: insert compartment data sections here. */")
 
+                simple_replace_morello(
+                    "flexos_morello_text.in",
+                    linker_script_path,
+                    "/* __FLEXOS MARKER__: insert compartment text sections here. */")
+
             tmpl = ""
             if (type(self.compartments[0].mechanism.driver) == VMEPTDriver):
                 tmpl = "linkerscript_initarray_ept.in",

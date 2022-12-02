@@ -1,5 +1,12 @@
 SECTIONS
 {
+	.text_comp{{ comp_nr }} : {
+		* (.text .text.*)
+	}
+}
+
+SECTIONS
+{
 	.data_comp{{ comp_nr }} : {
 		* (.data .data.* .rodata .rodata.*)
 	}
