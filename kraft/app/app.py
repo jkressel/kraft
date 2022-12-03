@@ -829,8 +829,11 @@ class Application(Component):
         # now do library-specific rewrites
         for lib in self.libraries:
             # first add per-library linker scripts
-            if (not lib.compartment.default):
+            if morello_enabled is True:
                 add_local_linkerscript(lib, fulldiff=fulldiff)
+            else:
+                if (not lib.compartment.default):
+                    add_local_linkerscript(lib, fulldiff=fulldiff)
 
             # then generate cocci files dynamically from the template
             gr_rule_template = get_sec_rule("gatereplacer.cocci.in")
