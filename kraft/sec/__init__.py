@@ -82,7 +82,7 @@ def textual_replacement(compartments, template_path, filep, marker, fulldiff=Non
         os.remove(backup_src)
 
 def add_local_linkerscript(lib, fulldiff=None, discard_local_text=False):
-    linker_script = get_sec_replacement("localextra.ld.in").replace(
+    linker_script = get_sec_replacement("flexos_morello_localextra.ld.in").replace(
             "{{ comp_nr }}", str(lib.compartment.number))
 
     if discard_local_text:
