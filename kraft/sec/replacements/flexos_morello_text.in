@@ -1,9 +1,9 @@
 . = ALIGN(0x1000);
 	_comp_text{{ comp_nr }} = .;
-	.text_comp{{ comp_nr }} :
+	.text.comp{{ comp_nr }} :
         {
 		. = . + 0x1000;
-		*(.text_comp{{ comp_nr }} .text_comp{{ comp_nr }}.*)
+		*(.text.comp{{ comp_nr }} .text.comp{{ comp_nr }}.*)
 		. = ALIGN(0x1000);
 	}
 	_ecomp_text{{ comp_nr }} = .;

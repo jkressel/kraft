@@ -1,6 +1,6 @@
 SECTIONS
 {
-	.text_comp{{ comp_nr }} : {
+	.text.comp{{ comp_nr }} : {
 		* (.text .text.*)
 	}
 }
