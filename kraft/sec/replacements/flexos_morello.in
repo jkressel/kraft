@@ -1,7 +1,7 @@
 	. = ALIGN(0x1000);
 	. = . + 0x1000;
 	_comp{{ comp_nr }} = .;
-	.data_comp{{ comp_nr }} (PROGBITS) :
+	.data_comp{{ comp_nr }} :
         {
 		PROVIDE(flexos_comp{{ comp_nr }}_alloc = .);
 		/* here: enough to store the compartment's allocator
