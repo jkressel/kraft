@@ -728,10 +728,16 @@ class Application(Component):
                 "ukboot_init_sections.in",
                 "lib/ukboot/boot.c",
                 "/* __FLEXOS MARKER__: insert compartment sections initializers here. */")
-            simple_replace(
-                "flexos_core_alloc_decls.in",
-                "lib/flexos-core/include/flexos/impl/intelpku.h",
-                "/* __FLEXOS MARKER__: insert compartment allocator decls here. */")
+            if morello_enabled is True:
+                simple_replace(
+                    "flexos_core_alloc_decls.in",
+                    "lib/flexos-core/include/flexos/impl/morello.h",
+                    "/* __FLEXOS MARKER__: insert compartment allocator decls here. */")
+            else:
+                simple_replace(
+                    "flexos_core_alloc_decls.in",
+                    "lib/flexos-core/include/flexos/impl/intelpku.h",
+                    "/* __FLEXOS MARKER__: insert compartment allocator decls here. */")
             simple_replace(
                 "ukalloc_getdefault.in",
                 "lib/ukalloc/include/uk/alloc.h",
