@@ -785,6 +785,14 @@ class Application(Component):
                 "/* __FLEXOS MARKER__: uk_sched_idle_init nulls */",
                 shstack_enabled=False)
 
+
+
+        for lib in self.libraries:
+            if (lib.compartment.default):
+                logger.error("Library: " + str(lib.name) + " is in default compartment")
+            else:
+                logger.error("Library: " + str(lib.name) + " is not in the default compartment")
+
         # this replacement is a little bit less standard :)
         comp_uksched = 0
         comp_vfscore = 0
