@@ -1,0 +1,1 @@
+extern char flexos_comp{{ comp_nr }}_alloc[];

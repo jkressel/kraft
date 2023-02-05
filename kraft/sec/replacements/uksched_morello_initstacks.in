@@ -1,0 +1,2 @@
+void *stack_comp{{ comp_nr }} = NULL;
+ALLOC_COMP_STACK_MORELLO(stack_comp{{ comp_nr }}, get_alloc({{ comp_nr }}));

@@ -81,8 +81,77 @@ def textual_replacement(compartments, template_path, filep, marker, fulldiff=Non
         # no changes: no need for a backup
         os.remove(backup_src)
 
+def textual_replacement_no_libs(compartments, template_path, filep, marker, fulldiff=None):
+    template = get_sec_replacement(template_path)
+    replacement = ""
+    replacement += template.replace("{{num_of_comps}}", str(len(compartments) + 1))
+
+    backup_src = os.path.join("/tmp", next(tempfile._get_candidate_names())) + ".bak"
+    shutil.copyfile(filep, backup_src)
+
+    with fileinput.FileInput(filep, inplace=True) as file:
+        for line in file:
+            print(line.replace(marker, replacement), end='')
+
+    if (not filecmp.cmp(backup_src, filep) and fulldiff is not None):
+        cmd = ["diff", "-urNp", backup_src, filep]
+        subprocess.call(cmd, stdout=fulldiff, stderr=subprocess.STDOUT)
+        logger.info("Rewritten " + filep + " (simple replacements), backup: " + backup_src)
+    else:
+        # no changes: no need for a backup
+        os.remove(backup_src)
+
 def add_local_linkerscript(lib, fulldiff=None, discard_local_text=False):
     linker_script = get_sec_replacement("localextra.ld.in").replace(
+            "{{ comp_nr }}", str(lib.compartment.number))
+
+    if discard_local_text:
+        linker_script = linker_script.replace(
+            "/* discard rules would come here */",
+            "SECTIONS\n"
+            "{\n\t/DISCARD/ : {\n\t\t*(.text_comp%s .text_comp%s.*)\n\t}\n}" % (
+                str(lib.compartment.number), str(lib.compartment.number)
+            )
+        )
+
+    if not os.path.exists(lib.localdir):
+        logger.info("Not considering %s / %s for local script rewriting: %s" % (
+            lib.name, lib.libname, lib.localdir))
+        return
+
+    with open(os.path.join(lib.localdir, "flexos_extra.ld"), "w") as f:
+        f.write(linker_script)
+
+    if fulldiff is not None:
+        cmd = ["diff", "-urNp", "/dev/null", os.path.join(lib.localdir, "flexos_extra.ld")]
+        subprocess.call(cmd, stdout=fulldiff, stderr=subprocess.STDOUT)
+        logger.info("Wrote per-lib extra linker script " +
+            os.path.join(lib.localdir, "flexos_extra.ld"))
+
+    backup_src = os.path.join("/tmp", next(tempfile._get_candidate_names())) + ".bak"
+    shutil.copyfile(os.path.join(lib.localdir, "Makefile.uk"), backup_src)
+
+    found = False
+    n = lib.kname.replace("-", "")
+    with open(os.path.join(lib.localdir, "Makefile.uk"), "r") as file:
+        for line in file:
+            if n + "_LDFLAGS-y += -Wl,-T,$(" + n + "_BASE)/flexos_extra.ld" in line:
+                found = True
+
+    if not found:
+        with open(os.path.join(lib.localdir, "Makefile.uk"), "a") as f:
+            f.write("\n" + n + "_LDFLAGS-y += -Wl,-T,$(" + n + "_BASE)/flexos_extra.ld")
+        if fulldiff is not None:
+            logger.info("Updated Makefile accordingly at %s" %
+                    os.path.join(lib.localdir, "Makefile.uk"))
+
+    if fulldiff is not None:
+        cmd = ["diff", "-urNp", backup_src, os.path.join(lib.localdir, "Makefile.uk")]
+        subprocess.call(cmd, stdout=fulldiff, stderr=subprocess.STDOUT)
+
+
+def add_local_linkerscript_morello(lib, fulldiff=None, discard_local_text=False):
+    linker_script = get_sec_replacement("flexos_morello_localextra.ld.in").replace(
             "{{ comp_nr }}", str(lib.compartment.number))
 
     if discard_local_text:

@@ -80,8 +80,10 @@ from kraft.sec.driver.vmept import VMEPTDriver
 from kraft.sec.driver.fcalls import FcallsDriver
 from kraft.sec.driver.morello import MorelloDriver
 from kraft.sec import textual_replacement
+from kraft.sec import textual_replacement_no_libs
 from kraft.sec import coccinelle_rewrite
 from kraft.sec import add_local_linkerscript
+from kraft.sec import add_local_linkerscript_morello
 
 import glob
 import filecmp
@@ -625,7 +627,7 @@ class Application(Component):
                 SHSTACK_enabled = True
                 FCALLS_enabled = True
             elif 'CONFIG_LIBFLEXOS_MORELLO=y' in conf_content:
-                SHSTACK_enabled = True
+                SHSTACK_enabled = False
                 FCALLS_enabled = True
                 morello_enabled = True
                 linker_script_path = "plat/morello/link.lds.S"
@@ -687,6 +689,15 @@ class Application(Component):
                 textual_replacement(comps, template_path, filep,
                         marker, fulldiff=fulldiff)
 
+            def simple_replace_morello(template_path, path, marker, shstack_enabled=True):
+                # shstack_enabled = should we replace when shared stacks are enabled?
+                if SHSTACK_enabled and not shstack_enabled:
+                    return
+                filep = os.path.join(self._config.unikraft.localdir, path)
+                comps = list(set(self.compartments) - set([c for c in self.compartments if c.default]))
+                textual_replacement_no_libs(comps, template_path, filep,
+                        marker, fulldiff=fulldiff)
+
             # FIXME hardcoded paths here
             if morello_enabled is False:
                 simple_replace(
@@ -720,14 +731,36 @@ class Application(Component):
                     tmpl, linker_script_path,
                     "/* __FLEXOS MARKER__: insert compartment init array sections here. */")
 
-            simple_replace(
-                "ukboot_decl_sections.in",
-                "lib/ukboot/boot.c",
-                "/* __FLEXOS MARKER__: insert compartment sections decls here. */")
-            simple_replace(
-                "ukboot_init_sections.in",
-                "lib/ukboot/boot.c",
-                "/* __FLEXOS MARKER__: insert compartment sections initializers here. */")
+            if morello_enabled is True:
+                simple_replace(
+                    "flexos_morello_boot_section_decls.in",
+                    "lib/ukboot/boot.c",
+                    "/* __FLEXOS MARKER__: insert morello compartment section decls here. */",
+                    shstack_enabled=False)
+                simple_replace(
+                    "flexos_morello_boot_alloc_decls.in",
+                    "lib/ukboot/boot.c",
+                    "/* __FLEXOS MARKER__: insert morello compartment alloc decls here. */",
+                    shstack_enabled=False)
+                simple_replace(
+                    "flexos_morello_compartment_alloc_init.in",
+                    "lib/ukboot/boot.c",
+                    "/* __FLEXOS MARKER__: insert morello compartment alloc init here. */",
+                    shstack_enabled=False)
+                simple_replace(
+                    "flexos_morello_compartment_init.in",
+                    "lib/ukboot/boot.c",
+                    "/* __FLEXOS MARKER__: insert morello compartment init here. */",
+                    shstack_enabled=False)
+            else:
+                simple_replace(
+                    "ukboot_decl_sections.in",
+                    "lib/ukboot/boot.c",
+                    "/* __FLEXOS MARKER__: insert compartment sections decls here. */")
+                simple_replace(
+                    "ukboot_init_sections.in",
+                    "lib/ukboot/boot.c",
+                    "/* __FLEXOS MARKER__: insert compartment sections initializers here. */")
             if morello_enabled is True:
                 simple_replace(
                     "flexos_core_alloc_decls.in",
@@ -745,16 +778,53 @@ class Application(Component):
 
             # these are related to per compartment stacks, so we don't want to
             # do these replacements if we are using the shared stack.
-            simple_replace(
-                "flexos_core_tsb_decls.in",
-                "lib/flexos-core/intelpku.c",
-                "/* __FLEXOS MARKER__: insert tsb decls here. */",
-                shstack_enabled=False)
-            simple_replace(
-                "flexos_core_tsb_hdecls.in",
-                "lib/flexos-core/include/flexos/impl/intelpku.h",
-                "/* __FLEXOS MARKER__: insert tsb extern decls here. */",
-                shstack_enabled=False)
+            if morello_enabled is True:
+                simple_replace(
+                    "flexos_core_tsb_decls.in",
+                    "lib/flexos-core/morello.c",
+                    "/* __FLEXOS MARKER__: insert tsb decls here. */",
+                    shstack_enabled=False)
+                simple_replace(
+                    "flexos_core_tsb_hdecls.in",
+                    "lib/flexos-core/include/flexos/impl/morello.h",
+                    "/* __FLEXOS MARKER__: insert tsb extern decls here. */",
+                    shstack_enabled=False)
+                simple_replace(
+                    "flexos_morello_switcher_call_hdecls.in",
+                    "lib/flexos-core/include/flexos/impl/morello.h",
+                    "/* __FLEXOS MARKER__: insert switcher call decls here. */",
+                    shstack_enabled=False)
+                simple_replace_morello(
+                    "flexos_morello_no_of_comps.in",
+                    "lib/flexos-core/include/flexos/impl/morello.h",
+                    "/* __FLEXOS MARKER__: insert morello comp count here. */",
+                    shstack_enabled=False)
+                simple_replace(
+                    "flexos_morello_switcher_calls.in",
+                    "lib/flexos-core/morello.c",
+                    "/* __FLEXOS MARKER__: insert switcher calls here. */",
+                    shstack_enabled=False)
+                simple_replace(
+                    "flexos_morello_create_switcher_call.in",
+                    "lib/flexos-core/morello.c",
+                    "/* __FLEXOS MARKER__: insert create switcher calls here. */",
+                    shstack_enabled=False)
+                simple_replace(
+                    "flexos_morello_seal_switcher_call.in",
+                    "lib/flexos-core/morello.c",
+                    "/* __FLEXOS MARKER__: insert seal switcher calls here. */",
+                    shstack_enabled=False)
+            else:
+                simple_replace(
+                    "flexos_core_tsb_decls.in",
+                    "lib/flexos-core/intelpku.c",
+                    "/* __FLEXOS MARKER__: insert tsb decls here. */",
+                    shstack_enabled=False)
+                simple_replace(
+                    "flexos_core_tsb_hdecls.in",
+                    "lib/flexos-core/include/flexos/impl/intelpku.h",
+                    "/* __FLEXOS MARKER__: insert tsb extern decls here. */",
+                    shstack_enabled=False)
             simple_replace(
                 "ukthread_initcall.in",
                 "lib/uksched/sched.c",
@@ -775,11 +845,18 @@ class Application(Component):
                 "lib/uksched/thread.c",
                 "/* __FLEXOS MARKER__: uk_thread_init decl */",
                 shstack_enabled=False)
-            simple_replace(
-                "uksched_initstacks.in",
-                "lib/uksched/sched.c",
-                "/* __FLEXOS MARKER__: insert stack allocations here. */",
-                shstack_enabled=False)
+            if morello_enabled is True:
+                simple_replace(
+                    "uksched_morello_initstacks.in",
+                    "lib/uksched/sched.c",
+                    "/* __FLEXOS MARKER__: insert stack allocations here. */",
+                    shstack_enabled=False)
+            else:
+                simple_replace(
+                    "uksched_initstacks.in",
+                    "lib/uksched/sched.c",
+                    "/* __FLEXOS MARKER__: insert stack allocations here. */",
+                    shstack_enabled=False)
             simple_replace(
                 "ukthread_installstacks.in",
                 "lib/uksched/thread.c",
@@ -828,7 +905,10 @@ class Application(Component):
         for lib in self.libraries:
             # first add per-library linker scripts
             if (not lib.compartment.default):
-                add_local_linkerscript(lib, fulldiff=fulldiff)
+                if (morello_enabled is True):
+                    add_local_linkerscript_morello(lib, fulldiff=fulldiff)
+                else:
+                    add_local_linkerscript(lib, fulldiff=fulldiff)
 
             # then generate cocci files dynamically from the template
             gr_rule_template = get_sec_rule("gatereplacer.cocci.in")

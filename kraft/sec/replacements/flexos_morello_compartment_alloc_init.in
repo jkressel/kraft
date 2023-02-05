@@ -1,0 +1,1 @@
+allocators[{{ comp_nr }}] = uk_allocbbuddy_init(flexos_comp{{ comp_nr }}_alloc, 1000 * __PAGE_SIZE);

@@ -1,0 +1,1 @@
+extern void *__capability switcher_call_comp{{ comp_nr }};

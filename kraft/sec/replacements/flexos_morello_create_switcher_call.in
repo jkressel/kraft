@@ -1,0 +1,1 @@
+morello_create_capability_from_ptr((uintptr_t *)(&(switcher_capabilities)), sizeof(switcher_capabilities), ((uintptr_t *)(&(switcher_call_comp{{ comp_nr }}))));

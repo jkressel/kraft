@@ -1,0 +1,1 @@
+asm("seal %w0, %w0, lpb" : "+r"(switcher_call_comp{{ comp_nr }}) :);
